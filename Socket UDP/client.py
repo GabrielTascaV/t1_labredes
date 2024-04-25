@@ -6,7 +6,7 @@ class SimpleMessageClient:
         self.server_host = server_host
         self.server_port = server_port
         self.client_name = client_name
-        self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.connected = False
 
     def connect(self):
@@ -18,7 +18,7 @@ class SimpleMessageClient:
     def send_message(self, message):
         if self.connected:
             self.client_socket.sendall(message.encode())
-
+ 
     def receive_messages(self):
         while True:
             try:
@@ -30,7 +30,7 @@ class SimpleMessageClient:
 
 if __name__ == "__main__":
     server_host = "127.0.0.1"
-    server_port = 9999
+    server_port = 8080
 
     client_name = input("Digite seu nome de usuário: ")
 
@@ -39,4 +39,5 @@ if __name__ == "__main__":
 
     while True:
         message = input()
-        client.send_message(message)
+        # C = CONNECT, D = DISCONNECT, M = MESSAGE
+        client.send_message("connect|" + message)

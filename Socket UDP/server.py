@@ -22,7 +22,7 @@ class SimpleMessageUDPServer:
                 continue
 
             client_name = [name for name, addr in self.clients.items() if addr == client_address][0]
-
+ 
             if "DISCONNECT|" in message:
                 del self.clients[client_name]
                 print(f"{client_name} desconectado.")
@@ -37,7 +37,7 @@ class SimpleMessageUDPServer:
 
 if __name__ == "__main__":
     server_host = "127.0.0.1"
-    server_port = 9999
+    server_port = 8080
 
     server = SimpleMessageUDPServer(server_host, server_port)
     server.start()

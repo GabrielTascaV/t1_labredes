@@ -1,53 +1,55 @@
 import socket
-import threading
 
-HOST = '127.0.0.1'
-PORT = 5000
-MAX_CONNECTIONS = 5
+class SimpleMessageTCPServer:
+    def __init__(self, host, port):
+        self.host = host
+        self.port = port
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.clients = {}
 
-clients = []
+    def start(self):
+        self.server_socket.bind((self.host, self.port))
+        self.server_socket.listen(5)
+        print(f"Servidor TCP iniciado em {self.host}:{self.port}")
 
-def handle_client(client_socket, client_address):
-    print(f"Nova conexão de cliente: {client_address}")
-    clients.append(client_socket)
+        while True:
+            client_socket, client_address = self.server_socket.accept()
+            client_name = client_address[0]
 
-    while True:
-        try:
-            message = client_socket.recv(1024).decode('utf-8')
-            if not message:
-                break
-            print(f'Mensagem recebida do cliente {client_address}: {message}')
-            broadcast_message(message, client_socket)
-        except Exception as e:
-            print(f"Erro ao lidar com a conexão do cliente {client_address}: {e}")
-            break
+            self.clients[client_name] = client_socket
+            print(f"Conexão estabelecida com {client_name} ({client_address[0]}:{client_address[1]})")
 
-    print(f"Conexão com cliente {client_address} encerrada.")
-    clients.remove(client_socket)
-    client_socket.close()
+            while True:
+                data = client_socket.recv(1024)
+                if not data:
+                    print(f"{client_name} desconectado.")
+                    del self.clients[client_name]
+                    client_socket.close()
+                    break
 
-def broadcast_message(message, sender_socket):
-    for client_socket in clients:
-        if client_socket != sender_socket:
-            try:
-                client_socket.sendall(message.encode('utf-8'))
-            except Exception as e:
-                print(f"Erro ao enviar mensagem para cliente: {e}")
-                clients.remove(client_socket)
+                message = data.decode()
+                print(f"Mensagem recebida de {client_name}: {message}")
 
-def start_server():
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.bind((HOST, PORT))
-    server_socket.listen(MAX_CONNECTIONS)
-    print(f'Servidor escutando em {HOST}:{PORT}')
+                if "CONNECT|" in message:
+                    client_name = message.split("|")[1]
+                    self.clients[client_name] = client_socket
+                    print(f"Conexão estabelecida com {client_name} ({client_address[0]}:{client_address[1]})")
+                    continue
+                
+                if "DISCONNECT|" in message:
+                    del self.clients[client_name]
+                    print(f"{client_name} desconectado.")
+                    client_socket.close()
+                    break
 
-    while True:
-        try:
-            client_socket, client_address = server_socket.accept()
-            client_handler = threading.Thread(target=handle_client, args=(client_socket, client_address))
-            client_handler.start()
-        except Exception as e:
-            print(f"Erro ao aceitar conexão de cliente: {e}")
+                for name, socket in self.clients.items():
+                    if name != client_name:
+                        socket.sendall(data)
+                        print(f"Mensagem enviada para {name}: {message}")
 
 if __name__ == "__main__":
-    start_server()
+    server_host = "127.0.0.1"
+    server_port = 8080
+
+    server = SimpleMessageTCPServer(server_host, server_port)
+    server.start()
