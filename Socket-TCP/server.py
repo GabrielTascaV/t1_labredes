@@ -64,8 +64,14 @@ class SimpleMessageTCPServer:
     def handle_sendto(self, client_name, message):
         recipient_name, send_name, message_content = message.split("|")[1],message.split("|")[2], message.split("|")[3]
         if recipient_name in self.clients:
-            recipient_socket = self.clients[recipient_name]
-            recipient_socket.send(f"{send_name}: {message_content}".encode())
+            if ".txt" in message_content:
+                recipient_socket = self.clients[recipient_name]
+                recipient_socket.send(f"{send_name}: {message_content}".encode())
+                with open(message_content, 'rb') as file:
+                    recipient_socket.sendfile(file)
+            else:
+                recipient_socket = self.clients[recipient_name]
+                recipient_socket.send(f"{send_name}: {message_content}".encode())
             print(f"Mensagem enviada para {recipient_name}: {message_content}")
         else:
             print(f"Cliente {recipient_name} não encontrado.")
