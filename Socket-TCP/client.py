@@ -2,12 +2,14 @@ import socket
 import threading
 
 class Client:
+    #Inicializa o cliente com o endereço do servidor e a porta.
     def __init__(self, server_host, server_port):
         self.server_host = server_host
         self.server_port = server_port
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client_name = None
 
+    #Conecta o cliente ao servidor.
     def connect(self):
         self.client_socket.connect((self.server_host, self.server_port))
 
@@ -20,6 +22,7 @@ class Client:
 
         self.send_messages()
 
+    #Recebe mensagens do servidor.
     def receive_messages(self):
         while True:
             try:
@@ -39,6 +42,7 @@ class Client:
                 print("Conexão perdida com o servidor.")
                 break
 
+    #Envia mensagens para o servidor.
     def send_messages(self):
         while True:
             message = input()

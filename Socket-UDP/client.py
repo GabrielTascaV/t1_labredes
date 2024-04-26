@@ -2,12 +2,14 @@ import socket
 import threading
 
 class Client:
+    #Inicializa o cliente com o endereço do servidor e a porta.
     def __init__(self, server_host, server_port):
         self.server_host = server_host
         self.server_port = server_port
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.client_name = None
 
+    #Conecta o cliente ao servidor.
     def connect(self):
         self.client_name = input("Digite seu nome: ")
         connect_message = f"CONNECT|{self.client_name}"
@@ -18,9 +20,11 @@ class Client:
 
         self.send_messages()
 
+    #Recebe mensagens do servidor.
     def receive_messages(self):
         while True:
             data, _ = self.client_socket.recvfrom(1024)
+            #Se a mensagem recebida for um arquivo, salva o arquivo. (Arquivo salva porem não escreve o conteudo do arquivo)
             if ".txt" in data.decode():
                 with open('received.txt', 'wb') as file:
                     while True:
@@ -31,6 +35,7 @@ class Client:
             else:
                 print(data.decode())
 
+    #Envia mensagens para o servidor.
     def send_messages(self):
         while True:
             message = input()
